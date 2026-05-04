@@ -14,6 +14,10 @@ Ce projet est migre vers React Native avec un backend Supabase.
 - Android Studio (ou appareil Android)
 - Compte Supabase
 
+Alternative sans dependances locales Node/npm:
+
+- Docker Desktop
+
 ## Installation
 
 1. Configurer Supabase
@@ -42,12 +46,26 @@ npm install
 npm run android
 ```
 
+Ou via Docker (recommande pour un transfert sans problemes de dependances):
+
+```bash
+docker compose up --build
+```
+
+L'application web Expo est disponible sur `http://localhost:8081`.
+
 Pour lancer le serveur Expo uniquement:
 
 ```bash
 npm run start
 # ou, si cache Metro a nettoyer
 npm run start:clear
+```
+
+Pour arreter Docker:
+
+```bash
+docker compose down
 ```
 
 ## Structure active

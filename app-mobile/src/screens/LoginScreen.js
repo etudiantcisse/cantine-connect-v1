@@ -11,6 +11,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import {
+  Utensils,
+  Eye,
+  EyeOff,
+  CheckCircle,
+} from "lucide-react-native/dist/cjs/lucide-react-native.js";
 import { useAuth } from "../hooks/useAuth";
 import colors from "../theme/colors";
 
@@ -70,7 +76,7 @@ const LoginScreen = ({ navigation }) => {
             <View
               style={[styles.logoBg, { width: logoSize, height: logoSize }]}
             >
-              <Text style={styles.logoIcon}>🍽️</Text>
+              <Utensils color={colors.surface} size={48} />
             </View>
             <Text style={styles.brandName}>Cantine Connectée</Text>
             <Text style={styles.brandTagline}>
@@ -96,6 +102,10 @@ const LoginScreen = ({ navigation }) => {
                   placeholder="votre.email@example.com"
                   placeholderTextColor={colors.mutedText}
                   keyboardType="email-address"
+                  autoComplete="off"
+                  textContentType="none"
+                  importantForAutofill="no"
+                  autoCorrect={false}
                   autoCapitalize="none"
                   editable={!loading}
                   value={email}
@@ -122,9 +132,11 @@ const LoginScreen = ({ navigation }) => {
                   onPress={() => setShowPassword(!showPassword)}
                   disabled={loading}
                 >
-                  <Text style={styles.eyeIconText}>
-                    {showPassword ? "👁️" : "👁️‍🗨️"}
-                  </Text>
+                  {showPassword ? (
+                    <EyeOff color={colors.mutedText} size={18} />
+                  ) : (
+                    <Eye color={colors.mutedText} size={18} />
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -165,17 +177,17 @@ const LoginScreen = ({ navigation }) => {
           {/* Footer Info */}
           <View style={styles.footerInfo}>
             <View style={styles.infoBullet}>
-              <Text style={styles.bulletIcon}>✓</Text>
+              <CheckCircle color={colors.success} size={18} />
               <Text style={styles.bulletText}>
                 Commandes faciles et rapides
               </Text>
             </View>
             <View style={styles.infoBullet}>
-              <Text style={styles.bulletIcon}>✓</Text>
+              <CheckCircle color={colors.success} size={18} />
               <Text style={styles.bulletText}>Paiement sécurisé</Text>
             </View>
             <View style={styles.infoBullet}>
-              <Text style={styles.bulletIcon}>✓</Text>
+              <CheckCircle color={colors.success} size={18} />
               <Text style={styles.bulletText}>Suivi en temps réel</Text>
             </View>
           </View>
@@ -312,9 +324,6 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 8,
   },
-  eyeIconText: {
-    fontSize: 18,
-  },
   button: {
     backgroundColor: colors.primary,
     borderRadius: 12,
@@ -379,11 +388,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-  },
-  bulletIcon: {
-    fontFamily: "Manrope_700Bold",
-    fontSize: 16,
-    color: colors.success,
   },
   bulletText: {
     fontFamily: "Manrope_500Medium",

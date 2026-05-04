@@ -1,3 +1,10 @@
 const { getDefaultConfig } = require("expo/metro-config");
 
-module.exports = getDefaultConfig(__dirname);
+const config = getDefaultConfig(__dirname);
+
+// Supabase publishes CJS/ESM bundles; allow Metro to resolve these extensions.
+config.resolver.sourceExts = Array.from(
+	new Set([...config.resolver.sourceExts, "cjs", "mjs"]),
+);
+
+module.exports = config;

@@ -11,6 +11,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import {
+  UserPlus,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  Store,
+} from "lucide-react-native/dist/cjs/lucide-react-native.js";
 import { useAuth } from "../hooks/useAuth";
 import colors from "../theme/colors";
 
@@ -136,7 +143,7 @@ const SignupScreen = ({ navigation }) => {
             <View
               style={[styles.logoBg, { width: logoSize, height: logoSize }]}
             >
-              <Text style={styles.logoIcon}>👤</Text>
+              <UserPlus color={colors.surface} size={40} />
             </View>
             <Text style={styles.brandName}>Créer un compte</Text>
             <Text style={styles.brandTagline}>Rejoignez Cantine Connectée</Text>
@@ -160,6 +167,10 @@ const SignupScreen = ({ navigation }) => {
                     style={styles.input}
                     placeholder="Votre nom"
                     placeholderTextColor={colors.mutedText}
+                    autoComplete="off"
+                    textContentType="none"
+                    importantForAutofill="no"
+                    autoCorrect={false}
                     editable={!loading}
                     value={formData.nom}
                     onChangeText={(value) => handleInputChange("nom", value)}
@@ -173,6 +184,10 @@ const SignupScreen = ({ navigation }) => {
                     style={styles.input}
                     placeholder="Votre prénom"
                     placeholderTextColor={colors.mutedText}
+                    autoComplete="off"
+                    textContentType="none"
+                    importantForAutofill="no"
+                    autoCorrect={false}
                     editable={!loading}
                     value={formData.prenom}
                     onChangeText={(value) => handleInputChange("prenom", value)}
@@ -190,6 +205,10 @@ const SignupScreen = ({ navigation }) => {
                   placeholder="votre.email@example.com"
                   placeholderTextColor={colors.mutedText}
                   keyboardType="email-address"
+                  autoComplete="off"
+                  textContentType="none"
+                  importantForAutofill="no"
+                  autoCorrect={false}
                   autoCapitalize="none"
                   editable={!loading}
                   value={formData.email}
@@ -207,6 +226,10 @@ const SignupScreen = ({ navigation }) => {
                   placeholder="+221 XX XXX XXXX"
                   placeholderTextColor={colors.mutedText}
                   keyboardType="phone-pad"
+                  autoComplete="off"
+                  textContentType="none"
+                  importantForAutofill="no"
+                  autoCorrect={false}
                   editable={!loading}
                   value={formData.telephone}
                   onChangeText={(value) =>
@@ -236,8 +259,29 @@ const SignupScreen = ({ navigation }) => {
                         formData.role === role && styles.roleButtonTextActive,
                       ]}
                     >
-                      {role === "etudiant" ? "👨‍🎓 Étudiant" : "🏪 Vendeur"}
+                      {role === "etudiant" ? "Étudiant" : "Vendeur"}
                     </Text>
+                    <View style={styles.roleIcon}>
+                      {role === "etudiant" ? (
+                        <GraduationCap
+                          color={
+                            formData.role === role
+                              ? colors.surface
+                              : colors.mutedText
+                          }
+                          size={16}
+                        />
+                      ) : (
+                        <Store
+                          color={
+                            formData.role === role
+                              ? colors.surface
+                              : colors.mutedText
+                          }
+                          size={16}
+                        />
+                      )}
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -252,6 +296,10 @@ const SignupScreen = ({ navigation }) => {
                       style={styles.input}
                       placeholder="Cantine du Campus"
                       placeholderTextColor={colors.mutedText}
+                      autoComplete="off"
+                      textContentType="none"
+                      importantForAutofill="no"
+                      autoCorrect={false}
                       editable={!loading}
                       value={formData.nomCantine}
                       onChangeText={(value) =>
@@ -268,6 +316,10 @@ const SignupScreen = ({ navigation }) => {
                       style={styles.input}
                       placeholder="Campus UCAD"
                       placeholderTextColor={colors.mutedText}
+                      autoComplete="off"
+                      textContentType="none"
+                      importantForAutofill="no"
+                      autoCorrect={false}
                       editable={!loading}
                       value={formData.localisation}
                       onChangeText={(value) =>
@@ -297,9 +349,11 @@ const SignupScreen = ({ navigation }) => {
                   onPress={() => setShowPassword(!showPassword)}
                   disabled={loading}
                 >
-                  <Text style={styles.eyeIconText}>
-                    {showPassword ? "👁️" : "👁️‍🗨️"}
-                  </Text>
+                  {showPassword ? (
+                    <EyeOff color={colors.mutedText} size={18} />
+                  ) : (
+                    <Eye color={colors.mutedText} size={18} />
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -324,9 +378,11 @@ const SignupScreen = ({ navigation }) => {
                   onPress={() => setShowConfirm(!showConfirm)}
                   disabled={loading}
                 >
-                  <Text style={styles.eyeIconText}>
-                    {showConfirm ? "👁️" : "👁️‍🗨️"}
-                  </Text>
+                  {showConfirm ? (
+                    <EyeOff color={colors.mutedText} size={18} />
+                  ) : (
+                    <Eye color={colors.mutedText} size={18} />
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -443,9 +499,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  logoIcon: {
-    fontSize: 40,
-  },
   brandName: {
     fontFamily: "Manrope_800ExtraBold",
     fontSize: 22,
@@ -514,9 +567,6 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 8,
   },
-  eyeIconText: {
-    fontSize: 16,
-  },
   roleContainer: {
     flexDirection: "row",
     gap: 10,
@@ -543,6 +593,9 @@ const styles = StyleSheet.create({
   },
   roleButtonTextActive: {
     color: colors.surface,
+  },
+  roleIcon: {
+    marginTop: 6,
   },
   button: {
     backgroundColor: colors.primary,

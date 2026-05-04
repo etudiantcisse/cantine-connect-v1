@@ -360,6 +360,7 @@ declare
   v_total numeric(12,2);
   v_platform_fee numeric(12,2);
   v_vendor_amount numeric(12,2);
+  v_payment_reference text;
 begin
   if auth.uid() is null then
     raise exception 'Utilisateur non authentifie';
@@ -382,6 +383,16 @@ begin
   v_total := v_prix * p_quantite;
   v_platform_fee := round(v_total * 0.05, 2);
   v_vendor_amount := v_total - v_platform_fee;
+  v_payment_reference := null;
+
+  if p_mode_paiement in ('wave', 'orange_money') then
+    v_payment_reference :=
+      upper(p_mode_paiement)
+      || '-'
+      || to_char(now(), 'YYYYMMDDHH24MISS')
+      || '-'
+      || encode(gen_random_bytes(3), 'hex');
+  end if;
 
   insert into public.orders (
     user_id,
@@ -390,6 +401,7 @@ begin
     mode_paiement,
     status,
     payment_status,
+    payment_reference,
     platform_fee,
     vendor_amount
   )
@@ -400,6 +412,7 @@ begin
     p_mode_paiement,
     'en_attente',
     'pending',
+    v_payment_reference,
     v_platform_fee,
     v_vendor_amount
   )
@@ -419,7 +432,7 @@ create or replace function public.create_orders_from_cart(
   p_items jsonb,
   p_mode_paiement text default 'cash'
 )
-returns setof uuid
+returns table (id uuid)
 language plpgsql
 security definer
 set search_path = public
@@ -435,6 +448,7 @@ declare
   v_total numeric(12,2);
   v_platform_fee numeric(12,2);
   v_vendor_amount numeric(12,2);
+  v_payment_reference text;
 begin
   if auth.uid() is null then
     raise exception 'Utilisateur non authentifie';
@@ -478,6 +492,16 @@ begin
 
     v_platform_fee := round(v_total * 0.05, 2);
     v_vendor_amount := v_total - v_platform_fee;
+    v_payment_reference := null;
+
+    if p_mode_paiement in ('wave', 'orange_money') then
+      v_payment_reference :=
+        upper(p_mode_paiement)
+        || '-'
+        || to_char(now(), 'YYYYMMDDHH24MISS')
+        || '-'
+        || encode(gen_random_bytes(3), 'hex');
+    end if;
 
     insert into public.orders (
       user_id,
@@ -486,6 +510,7 @@ begin
       mode_paiement,
       status,
       payment_status,
+      payment_reference,
       platform_fee,
       vendor_amount
     )
@@ -496,10 +521,11 @@ begin
       p_mode_paiement,
       'en_attente',
       'pending',
+      v_payment_reference,
       v_platform_fee,
       v_vendor_amount
     )
-    returning id into v_order_id;
+    returning orders.id into v_order_id;
 
     for v_item in select * from jsonb_array_elements(v_group -> 'items')
     loop
@@ -511,7 +537,8 @@ begin
       );
     end loop;
 
-    return next v_order_id;
+    id := v_order_id;
+    return next;
   end loop;
 
   return;
@@ -519,7 +546,7 @@ end;
 $$;
 
 revoke all on function public.create_orders_from_cart(jsonb, text) from public;
-grant execute on function public.create_orders_from_cart(jsonb, text) to authenticated;
+grant execute on function public.create_orders_from_cart(jsonb, text) to anon, authenticated;
 
 create or replace function public.mark_order_paid(
   p_order_id uuid,

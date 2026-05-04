@@ -44,13 +44,44 @@ export async function checkoutCart({ groupedByVendor, modePaiement = "cash" }) {
     throw new Error("Panier vide");
   }
 
-  const payload = groupedByVendor.map((group) => ({
-    vendor_id: group.vendorId,
-    items: group.items.map((item) => ({
-      product_id: item.product.id,
-      quantite: item.quantity,
-    })),
-  }));
+  const invalidItems = [];
+  const payload = groupedByVendor.map((group) => {
+    const fallbackVendorId = group?.items?.[0]?.product?.vendor_id ?? null;
+    const vendorId = group.vendorId ?? fallbackVendorId;
+    const items = (group.items ?? []).map((item) => {
+      const productId = item?.product?.id ?? null;
+      const quantity = Number(item?.quantity ?? 0);
+      if (!vendorId || !productId || quantity <= 0) {
+        invalidItems.push({
+          vendorId,
+          productId,
+          quantity,
+        });
+      }
+      return {
+        product_id: productId,
+        quantite: quantity,
+      };
+    });
+
+    return {
+      vendor_id: vendorId,
+      items,
+    };
+  });
+
+  if (invalidItems.length > 0) {
+    throw new Error(
+      "Panier invalide: produits ou vendeurs manquants. Supprimez les articles invalides et réessayez.",
+    );
+  }
+
+  // Log pour diagnostic
+  console.log(
+    "[OrderService] Payload envoyé au RPC:",
+    JSON.stringify(payload, null, 2),
+  );
+  console.log("[OrderService] Mode paiement:", modePaiement);
 
   const { data, error } = await supabase.rpc("create_orders_from_cart", {
     p_items: payload,
@@ -58,10 +89,21 @@ export async function checkoutCart({ groupedByVendor, modePaiement = "cash" }) {
   });
 
   if (error) {
-    throw error;
+    console.error("[OrderService] Erreur RPC:", error);
+    console.error("[OrderService] Message:", error.message);
+    console.error("[OrderService] Détails:", error.details);
+    console.error("[OrderService] Hint:", error.hint);
+    throw new Error(
+      error.details ||
+        error.message ||
+        "Erreur lors de la création de la commande. Vérifiez votre panier et réessayez.",
+    );
   }
 
-  return data ?? [];
+  console.log("[OrderService] Réponse RPC:", data);
+
+  const rows = Array.isArray(data) ? data : [];
+  return rows.map((row) => row?.id).filter(Boolean);
 }
 
 export async function cancelOrder(orderId) {

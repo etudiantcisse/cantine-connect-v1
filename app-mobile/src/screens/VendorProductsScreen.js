@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +13,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { PRODUCT_CATEGORIES } from "../constants/categories";
 import { useAuth } from "../hooks/useAuth";
@@ -23,14 +26,43 @@ import {
   updateVendorProduct,
   updateVendorProductAvailability,
 } from "../services/vendorService";
+import { supabase } from "../lib/supabase";
 import colors from "../theme/colors";
 import { formatFcfa } from "../utils/currency";
 
 const defaultForm = { nom: "", description: "", prix: "", category: "plat" };
+const UPLOAD_TIMEOUT_MS = 45000;
+
+function withTimeout(promise, ms, errorMessage) {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
+async function fetchWithTimeout(uri, ms, errorMessage) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(uri, { signal: controller.signal });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(errorMessage);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 export default function VendorProductsScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const { user, profile } = useAuth();
+  const isVendor = profile?.role === "vendeur";
   const [vendor, setVendor] = useState(null);
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState(defaultForm);
@@ -38,6 +70,10 @@ export default function VendorProductsScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
+  const [imageTouched, setImageTouched] = useState(false);
+  const [imageIsLocal, setImageIsLocal] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const categories = useMemo(
     () => PRODUCT_CATEGORIES.filter((c) => c.id !== "tous"),
@@ -45,7 +81,10 @@ export default function VendorProductsScreen({ navigation }) {
   );
 
   const load = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !isVendor) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       let v = await getVendorByProfile(user.id);
@@ -69,7 +108,7 @@ export default function VendorProductsScreen({ navigation }) {
 
   useEffect(() => {
     load();
-  }, [user?.id]);
+  }, [user?.id, isVendor]);
 
   const saveProduct = async () => {
     const prix = Number(form.prix);
@@ -84,6 +123,15 @@ export default function VendorProductsScreen({ navigation }) {
     }
     setSaving(true);
     try {
+      let imageUrl;
+      if (imageTouched) {
+        if (imageUri && imageIsLocal) {
+          imageUrl = await uploadProductImage(imageUri);
+        } else {
+          imageUrl = imageUri ?? null;
+        }
+      }
+
       if (editingProductId) {
         await updateVendorProduct({
           productId: editingProductId,
@@ -91,6 +139,7 @@ export default function VendorProductsScreen({ navigation }) {
           description: form.description.trim(),
           prix,
           category: form.category,
+          imageUrl,
         });
       } else {
         await createVendorProduct({
@@ -99,10 +148,14 @@ export default function VendorProductsScreen({ navigation }) {
           description: form.description.trim(),
           prix,
           category: form.category,
+          imageUrl,
         });
       }
       setForm(defaultForm);
       setEditingProductId(null);
+      setImageUri(null);
+      setImageTouched(false);
+      setImageIsLocal(false);
       setShowForm(false);
       await load();
     } catch (error) {
@@ -129,13 +182,99 @@ export default function VendorProductsScreen({ navigation }) {
       prix: String(product.prix ?? ""),
       category: product.category ?? "plat",
     });
+    setImageUri(product.image_url ?? null);
+    setImageTouched(false);
+    setImageIsLocal(false);
     setShowForm(true);
   };
 
   const cancelEdit = () => {
     setEditingProductId(null);
     setForm(defaultForm);
+    setImageUri(null);
+    setImageTouched(false);
+    setImageIsLocal(false);
     setShowForm(false);
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Image",
+        "Autorisation requise pour accéder à votre galerie.",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+      aspect: [4, 3],
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setImageUri(result.assets[0].uri);
+      setImageTouched(true);
+      setImageIsLocal(true);
+    }
+  };
+
+  const removeImage = () => {
+    setImageUri(null);
+    setImageTouched(true);
+    setImageIsLocal(false);
+  };
+
+  const uploadProductImage = async (uri) => {
+    if (!vendor?.id) {
+      throw new Error("Vendeur introuvable");
+    }
+
+    setUploading(true);
+    try {
+      const response = await fetchWithTimeout(
+        uri,
+        15000,
+        "Lecture de l'image trop longue. Réessayez avec une autre image.",
+      );
+      const blob = await withTimeout(
+        response.blob(),
+        15000,
+        "Préparation de l'image trop longue. Réessayez.",
+      );
+      const extension = uri.split(".").pop()?.split("?")[0] || "jpg";
+      const filePath = `${vendor.id}/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.${extension}`;
+
+      const uploadPromise = supabase.storage.from("product-images").upload(filePath, blob, {
+        contentType: blob.type || "image/jpeg",
+        upsert: true,
+      });
+      const { error } = await withTimeout(
+        uploadPromise,
+        UPLOAD_TIMEOUT_MS,
+        "Upload bloqué. Vérifiez votre connexion Internet puis réessayez.",
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      if (!data?.publicUrl) {
+        throw new Error("URL d'image indisponible");
+      }
+
+      return data.publicUrl;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeProduct = (product) => {
@@ -179,6 +318,21 @@ export default function VendorProductsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {!isVendor ? (
+        <View style={styles.guardContainer}>
+          <Text style={styles.guardTitle}>Accès vendeur requis</Text>
+          <Text style={styles.guardText}>
+            Cette section est réservée aux vendeurs pour gérer leur menu.
+          </Text>
+          <Pressable
+            style={styles.guardButton}
+            onPress={() => navigation.navigate("Accueil")}
+          >
+            <Text style={styles.guardButtonText}>Retour à l'accueil</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -208,6 +362,7 @@ export default function VendorProductsScreen({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        scrollEnabled={isVendor}
       >
         {/* KPIs */}
         <View style={styles.kpiGrid}>
@@ -310,6 +465,45 @@ export default function VendorProductsScreen({ navigation }) {
             <Text style={styles.formTitle}>
               {editingProductId ? "✏️ Modifier le produit" : "Nouveau produit"}
             </Text>
+            <View style={styles.imagePickerRow}>
+              <Pressable
+                style={styles.imagePickerBtn}
+                onPress={pickImage}
+                disabled={saving || uploading}
+              >
+                <MaterialCommunityIcons
+                  name="image-plus"
+                  size={18}
+                  color={colors.primary}
+                />
+                <Text style={styles.imagePickerText}>
+                  {imageUri ? "Changer l'image" : "Ajouter une image"}
+                </Text>
+              </Pressable>
+              {imageUri ? (
+                <Pressable
+                  style={styles.imageRemoveBtn}
+                  onPress={removeImage}
+                  disabled={saving || uploading}
+                >
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={14}
+                    color="#EF4444"
+                  />
+                  <Text style={styles.imageRemoveText}>Supprimer</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+            ) : null}
+            {uploading ? (
+              <View style={styles.uploadingRow}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.uploadingText}>Upload en cours...</Text>
+              </View>
+            ) : null}
             <TextInput
               placeholder="Nom du produit *"
               style={styles.input}
@@ -470,6 +664,37 @@ export default function VendorProductsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F7F6F3" },
+  guardContainer: {
+    paddingHorizontal: 18,
+    paddingTop: 60,
+    paddingBottom: 24,
+    alignItems: "center",
+    gap: 12,
+  },
+  guardTitle: {
+    color: "#1e293b",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 20,
+    textAlign: "center",
+  },
+  guardText: {
+    color: "#64748B",
+    fontFamily: "Manrope_500Medium",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  guardButton: {
+    marginTop: 6,
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+  },
+  guardButtonText: {
+    color: "white",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -608,6 +833,61 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_800ExtraBold",
     fontSize: 17,
     marginBottom: 2,
+  },
+  imagePickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  imagePickerBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FFF7ED",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(244,140,37,0.25)",
+  },
+  imagePickerText: {
+    color: colors.primary,
+    fontFamily: "Manrope_700Bold",
+    fontSize: 12,
+  },
+  imageRemoveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#FEF2F2",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.2)",
+  },
+  imageRemoveText: {
+    color: "#EF4444",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 12,
+  },
+  imagePreview: {
+    width: "100%",
+    height: 160,
+    borderRadius: 12,
+    backgroundColor: "#F1F5F9",
+  },
+  uploadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  uploadingText: {
+    color: colors.mutedText,
+    fontFamily: "Manrope_500Medium",
+    fontSize: 12,
   },
   input: {
     borderWidth: 1,

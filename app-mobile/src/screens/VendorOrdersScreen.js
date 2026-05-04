@@ -52,7 +52,13 @@ const STATUS_CONFIG = {
 
 const TABS = ["Tout", "En attente", "En préparation", "Prête"];
 
-function OrderDetailModal({ order, visible, onClose, onStatusChange }) {
+function OrderDetailModal({
+  order,
+  visible,
+  onClose,
+  onStatusChange,
+  onMarkPaid,
+}) {
   if (!order) return null;
   const config =
     STATUS_CONFIG[order.status] ?? STATUS_CONFIG[ORDER_STATUS.EN_ATTENTE];
@@ -136,7 +142,34 @@ function OrderDetailModal({ order, visible, onClose, onStatusChange }) {
                 {config.label}
               </Text>
             </View>
+            <View>
+              <Text style={modal.statusToggleLabel}>Paiement</Text>
+              <Text
+                style={[
+                  modal.statusToggleValue,
+                  {
+                    color:
+                      order.payment_status === "paid" ? "#10B981" : "#F59E0B",
+                  },
+                ]}
+              >
+                {order.payment_status === "paid" ? "Confirmé" : "En attente"}
+              </Text>
+            </View>
           </View>
+
+          {order.payment_status !== "paid" && typeof onMarkPaid === "function" ? (
+            <Pressable
+              style={[modal.actionBtn, { backgroundColor: "#2563EB" }]}
+              onPress={() => {
+                onMarkPaid(order.id);
+                onClose();
+              }}
+            >
+              <Text style={modal.actionBtnText}>Marquer paiement reçu</Text>
+            </Pressable>
+          ) : null}
+
           {order.status === ORDER_STATUS.EN_ATTENTE && (
             <Pressable
               style={modal.actionBtn}
@@ -571,6 +604,7 @@ export default function VendorOrdersScreen() {
         visible={!!selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onStatusChange={changeStatus}
+        onMarkPaid={handleMarkPaid}
       />
     </View>
   );

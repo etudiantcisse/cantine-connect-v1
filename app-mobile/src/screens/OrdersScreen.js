@@ -15,6 +15,7 @@ import OrderCard from "../components/OrderCard";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { cancelOrder, getOrdersByUser } from "../services/ordersService";
+import { getPaymentLink } from "../services/paymentsService";
 import colors from "../theme/colors";
 
 const STATUS_TABS = ["Toutes", "En cours", "Prêtes", "Livrées"];
@@ -65,6 +66,20 @@ export default function OrdersScreen({ navigation }) {
     } catch (error) {
       Alert.alert("Commande", error.message ?? "Erreur d'annulation");
     }
+  };
+
+  const handlePay = (order) => {
+    const paymentLink = getPaymentLink(order.mode_paiement);
+    if (!paymentLink) {
+      Alert.alert("Paiement", "Lien de paiement indisponible.");
+      return;
+    }
+
+    navigation.navigate("Paiement", {
+      orderIds: [order.id],
+      modePaiement: order.mode_paiement,
+      paymentLink,
+    });
   };
 
   const filteredOrders = orders.filter((o) => {
@@ -144,7 +159,7 @@ export default function OrdersScreen({ navigation }) {
           ) : null
         }
         renderItem={({ item }) => (
-          <OrderCard order={item} onCancel={handleCancel} />
+          <OrderCard order={item} onCancel={handleCancel} onPay={handlePay} />
         )}
       />
     </View>

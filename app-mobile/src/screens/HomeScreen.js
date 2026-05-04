@@ -50,8 +50,12 @@ export default function HomeScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#f8f7f5" />
       <ScrollView
         style={styles.container}
-        contentContainerStyle={[styles.content, isTablet && styles.contentWide]}
-        scrollEnabled={false}
+        contentContainerStyle={[
+          styles.content,
+          isVendor && styles.contentVendor,
+          isTablet && styles.contentWide,
+        ]}
+        scrollEnabled
       >
         {/* Brand */}
         <Animated.View style={[styles.headerSection, { opacity: fadeAnim }]}>
@@ -108,12 +112,24 @@ export default function HomeScreen({ navigation }) {
             { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
           ]}
         >
-          <Text style={styles.title}>BIENVENUE À VOTRE</Text>
-          <Text style={styles.titleAccent}>CANTINE INTELLIGENTE</Text>
-          <Text style={styles.subtitle}>
-            Connectez-vous pour accéder à vos services de restauration connectée
-            et gérer vos repas en toute simplicité.
-          </Text>
+          {isVendor ? (
+            <>
+              <Text style={styles.title}>ESPACE</Text>
+              <Text style={styles.titleAccent}>VENDEUR</Text>
+              <Text style={styles.subtitle}>
+                Gérez vos produits, vos commandes et votre cantine.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.title}>BIENVENUE À VOTRE</Text>
+              <Text style={styles.titleAccent}>CANTINE INTELLIGENTE</Text>
+              <Text style={styles.subtitle}>
+                Connectez-vous pour accéder à vos services de restauration connectée
+                et gérer vos repas en toute simplicité.
+              </Text>
+            </>
+          )}
         </Animated.View>
 
         {/* Buttons */}
@@ -124,29 +140,81 @@ export default function HomeScreen({ navigation }) {
             { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
           ]}
         >
-          <Pressable
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
-            onPress={() => navigation.navigate("Produits")}
-          >
-            <MaterialCommunityIcons name="basket-outline" size={22} color="white" />
-            <Text style={styles.primaryButtonText}>Acheteur</Text>
-            <MaterialCommunityIcons name="chevron-right" size={20} color="white" style={{ marginLeft: "auto" }} />
-          </Pressable>
+          {isVendor ? (
+            <>
+              <Pressable
+                style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
+                onPress={() => navigation.navigate("Vendeur Produits")}
+              >
+                <MaterialCommunityIcons name="storefront-outline" size={22} color="white" />
+                <Text style={styles.primaryButtonText}>Mes produits</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color="white" style={{ marginLeft: "auto" }} />
+              </Pressable>
 
-          <Pressable
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedSecondary]}
-            onPress={() => navigation.navigate(isVendor ? "Vendeur Produits" : "Commandes")}
-          >
-            <MaterialCommunityIcons
-              name={isVendor ? "storefront-outline" : "clipboard-list-outline"}
-              size={22}
-              color={colors.primary}
-            />
-            <Text style={styles.secondaryButtonText}>
-              {isVendor ? "Vendeur" : "Mes commandes"}
-            </Text>
-            <MaterialCommunityIcons name="chevron-right" size={20} color={colors.primary} style={{ marginLeft: "auto" }} />
-          </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedSecondary]}
+                onPress={() => navigation.navigate("Vendeur Commandes")}
+              >
+                <MaterialCommunityIcons
+                  name="receipt-text-outline"
+                  size={22}
+                  color={colors.primary}
+                />
+                <Text style={styles.secondaryButtonText}>Commandes</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.primary} style={{ marginLeft: "auto" }} />
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedSecondary]}
+                onPress={() => navigation.navigate("Ma Cantine")}
+              >
+                <MaterialCommunityIcons
+                  name="store-outline"
+                  size={22}
+                  color={colors.primary}
+                />
+                <Text style={styles.secondaryButtonText}>Ma cantine</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.primary} style={{ marginLeft: "auto" }} />
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedSecondary]}
+                onPress={() => navigation.navigate("Rapports")}
+              >
+                <MaterialCommunityIcons
+                  name="chart-box-outline"
+                  size={22}
+                  color={colors.primary}
+                />
+                <Text style={styles.secondaryButtonText}>Rapports</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.primary} style={{ marginLeft: "auto" }} />
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Pressable
+                style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
+                onPress={() => navigation.navigate("Produits")}
+              >
+                <MaterialCommunityIcons name="basket-outline" size={22} color="white" />
+                <Text style={styles.primaryButtonText}>Commander</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color="white" style={{ marginLeft: "auto" }} />
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressedSecondary]}
+                onPress={() => navigation.navigate("Commandes")}
+              >
+                <MaterialCommunityIcons
+                  name="clipboard-list-outline"
+                  size={22}
+                  color={colors.primary}
+                />
+                <Text style={styles.secondaryButtonText}>Mes commandes</Text>
+                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.primary} style={{ marginLeft: "auto" }} />
+              </Pressable>
+            </>
+          )}
 
           <Pressable style={styles.tertiaryButton} onPress={logout}>
             <MaterialCommunityIcons name="logout" size={18} color="#94A3B8" />
@@ -173,6 +241,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     minHeight: "100%",
+  },
+  contentVendor: {
+    justifyContent: "flex-start",
+    gap: 18,
   },
   contentWide: { maxWidth: 800, alignSelf: "center", width: "100%" },
   headerSection: { paddingTop: 18, marginBottom: 10 },

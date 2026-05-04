@@ -1,5 +1,39 @@
 import { supabase } from "../lib/supabase";
 
+const PAYMENT_LINKS = {
+  wave: "https://pay.wave.com/m/M_sn_1TBoVkAxeYvQ/c/sn/",
+  orange_money: null,
+  cash: null,
+};
+
+export function getPaymentLink(mode) {
+  return PAYMENT_LINKS[mode] ?? null;
+}
+
+export function buildPaymentLink(mode, { amount, phoneNumber, reference } = {}) {
+  const base = getPaymentLink(mode);
+  if (!base) return null;
+
+  if (mode !== "wave") {
+    return base;
+  }
+
+  const params = new URLSearchParams();
+  if (Number.isFinite(Number(amount)) && Number(amount) > 0) {
+    params.set("amount", String(Math.round(Number(amount))));
+  }
+  if (phoneNumber) {
+    params.set("phone", String(phoneNumber));
+  }
+  if (reference) {
+    params.set("client_reference", String(reference));
+  }
+
+  const query = params.toString();
+  if (!query) return base;
+  return base.includes("?") ? `${base}&${query}` : `${base}?${query}`;
+}
+
 export async function markOrderPaid(orderId, paymentReference = null) {
   if (!orderId) {
     throw new Error("Commande invalide");

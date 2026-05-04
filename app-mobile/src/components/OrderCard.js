@@ -67,12 +67,16 @@ function getPaymentStatusLabel(status) {
   }
 }
 
-export default function OrderCard({ order, onCancel }) {
+export default function OrderCard({ order, onCancel, onPay }) {
   const { width } = useWindowDimensions();
   const compact = width < 430;
   const canCancel = order.status === "en_attente";
   const currentStepIndex = STATUS_STEPS.indexOf(order.status);
   const isCanceled = order.status === ORDER_STATUS.ANNULEE;
+  const canPay =
+    order.payment_status === "pending" &&
+    order.mode_paiement &&
+    order.mode_paiement !== "cash";
 
   return (
     <View style={styles.card}>
@@ -161,12 +165,24 @@ export default function OrderCard({ order, onCancel }) {
           <Text style={styles.paymentStatus}>
             {getPaymentStatusLabel(order.payment_status)}
           </Text>
+          {order.payment_reference ? (
+            <Text style={styles.paymentRef}>
+              Ref: {order.payment_reference}
+            </Text>
+          ) : null}
         </View>
-        {canCancel ? (
-          <Pressable onPress={() => onCancel(order.id)}>
-            <Text style={styles.cancel}>Annuler</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.footerActions}>
+          {canPay && typeof onPay === "function" ? (
+            <Pressable onPress={() => onPay(order)}>
+              <Text style={styles.pay}>Payer</Text>
+            </Pressable>
+          ) : null}
+          {canCancel ? (
+            <Pressable onPress={() => onCancel(order.id)}>
+              <Text style={styles.cancel}>Annuler</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -191,6 +207,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 3,
     paddingHorizontal: 10,
+  footerActions: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+  },
   },
   badgeText: {
     fontWeight: "700",
@@ -199,6 +220,14 @@ const styles = StyleSheet.create({
   date: {
     color: colors.mutedText,
     fontSize: 11,
+  paymentRef: {
+    color: colors.mutedText,
+    fontSize: 11,
+  },
+  pay: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
   },
   vendor: {
     color: colors.text,

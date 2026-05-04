@@ -15,6 +15,19 @@ export async function getVendorByProfile(profileId) {
   return data;
 }
 
+export async function getVendors() {
+  const { data, error } = await supabase
+    .from("vendors")
+    .select("id,nom_cantine,localisation,telephone")
+    .order("nom_cantine", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
 export async function createVendorIfMissing({
   profileId,
   nomCantine,
@@ -80,6 +93,7 @@ export async function createVendorProduct({
   description,
   prix,
   category,
+  imageUrl,
 }) {
   const { data, error } = await supabase
     .from("products")
@@ -89,6 +103,7 @@ export async function createVendorProduct({
       description,
       prix,
       category,
+      image_url: imageUrl ?? null,
       is_available: true,
     })
     .select(
@@ -109,19 +124,50 @@ export async function updateVendorProduct({
   description,
   prix,
   category,
+  imageUrl,
 }) {
+  const payload = {
+    nom,
+    description,
+    prix,
+    category,
+  };
+
+  if (typeof imageUrl !== "undefined") {
+    payload.image_url = imageUrl;
+  }
+
   const { data, error } = await supabase
     .from("products")
-    .update({
-      nom,
-      description,
-      prix,
-      category,
-    })
+    .update(payload)
     .eq("id", productId)
     .select(
       "id,vendor_id,nom,description,prix,category,is_available,image_url,created_at",
     )
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateVendor({
+  vendorId,
+  nomCantine,
+  localisation,
+  telephone,
+}) {
+  const { data, error } = await supabase
+    .from("vendors")
+    .update({
+      nom_cantine: nomCantine,
+      localisation,
+      telephone,
+    })
+    .eq("id", vendorId)
+    .select("id,profile_id,nom_cantine,localisation,telephone")
     .single();
 
   if (error) {

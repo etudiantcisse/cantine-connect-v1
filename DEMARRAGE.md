@@ -41,6 +41,15 @@ npm install
 npm run start
 ```
 
+Alternative Docker pour eviter les problemes de dependances entre machines:
+
+```bash
+cd app-mobile
+docker compose up --build
+```
+
+Acces web Expo: `http://localhost:8081`
+
 Ensuite:
 
 - Android: touche `a` dans Expo ou `npm run android`

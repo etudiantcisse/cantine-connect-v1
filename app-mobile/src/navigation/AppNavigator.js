@@ -10,9 +10,11 @@ import FinancialReportsScreen from "../screens/FinancialReportsScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import OrdersScreen from "../screens/OrdersScreen";
+import PaymentPendingScreen from "../screens/PaymentPendingScreen";
 import ProductsScreen from "../screens/ProductsScreen";
 import SignupScreen from "../screens/SignupScreen";
 import VendorOrdersScreen from "../screens/VendorOrdersScreen";
+import VendorProfileScreen from "../screens/VendorProfileScreen";
 import VendorProductsScreen from "../screens/VendorProductsScreen";
 import colors from "../theme/colors";
 
@@ -92,6 +94,14 @@ function AppTabs() {
             color={color}
           />
         );
+      case "Ma Cantine":
+        return (
+          <MaterialCommunityIcons
+            name="store-outline"
+            size={20}
+            color={color}
+          />
+        );
       case "Rapports":
         return (
           <MaterialCommunityIcons
@@ -113,6 +123,7 @@ function AppTabs() {
 
   return (
     <Tab.Navigator
+      key={isVendor ? "vendor-tabs" : "buyer-tabs"}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
@@ -131,31 +142,18 @@ function AppTabs() {
         tabBarIcon: ({ focused }) => getTabIcon(route.name, focused),
       })}
     >
-      <Tab.Screen name="Accueil" component={HomeScreen} />
-      <Tab.Screen
-        name="Produits"
-        component={ProductsScreen}
-        options={{ title: "Menu", headerShown: false }}
-      />
-      <Tab.Screen
-        name="Panier"
-        component={CartScreen}
-        options={{
-          title: cartCount > 0 ? `Panier (${cartCount})` : "Panier",
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Commandes"
-        component={OrdersScreen}
-        options={{ title: "Mes commandes", headerShown: false }}
-      />
       {isVendor ? (
         <>
+          <Tab.Screen name="Accueil" component={HomeScreen} />
           <Tab.Screen
             name="Vendeur Produits"
             component={VendorProductsScreen}
             options={{ title: "Mes produits", headerShown: false }}
+          />
+          <Tab.Screen
+            name="Ma Cantine"
+            component={VendorProfileScreen}
+            options={{ title: "Ma cantine", headerShown: false }}
           />
           <Tab.Screen
             name="Vendeur Commandes"
@@ -171,8 +169,39 @@ function AppTabs() {
             }}
           />
         </>
-      ) : null}
+      ) : (
+        <>
+          <Tab.Screen name="Accueil" component={HomeScreen} />
+          <Tab.Screen
+            name="Produits"
+            component={ProductsScreen}
+            options={{ title: "Menu", headerShown: false }}
+          />
+          <Tab.Screen
+            name="Panier"
+            component={CartScreen}
+            options={{
+              title: cartCount > 0 ? `Panier (${cartCount})` : "Panier",
+              headerShown: false,
+            }}
+          />
+          <Tab.Screen
+            name="Commandes"
+            component={OrdersScreen}
+            options={{ title: "Mes commandes", headerShown: false }}
+          />
+        </>
+      )}
     </Tab.Navigator>
+  );
+}
+
+function MainStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={AppTabs} />
+      <Stack.Screen name="Paiement" component={PaymentPendingScreen} />
+    </Stack.Navigator>
   );
 }
 
@@ -183,5 +212,5 @@ export default function AppNavigator() {
     return <LoadingView />;
   }
 
-  return isAuthenticated ? <AppTabs /> : <AuthStack />;
+  return isAuthenticated ? <MainStack /> : <AuthStack />;
 }

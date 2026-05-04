@@ -21,17 +21,14 @@ function getIconByCategory(category) {
 
 export default function ProductCard({ product, onOrder, onAddToCart }) {
   const handleOrder = () => {
-    Alert.alert(
-      "Commander",
-      `${product.nom}\n${formatFcfa(product.prix)}\n\nConfirmer la commande ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Commander",
-          onPress: () => onOrder(product),
-        },
-      ],
-    );
+    if (typeof onOrder !== "function") {
+      Alert.alert("Commande", "Action indisponible.");
+      return;
+    }
+
+    Promise.resolve(onOrder(product)).catch((error) => {
+      Alert.alert("Commande", error?.message ?? "Erreur lors de la commande");
+    });
   };
 
   return (

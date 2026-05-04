@@ -2,12 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
+  Image,
   ImageBackground,
+  Linking,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -17,28 +20,42 @@ import { PRODUCT_CATEGORIES } from "../constants/categories";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { getProducts } from "../services/productsService";
+import { getVendors } from "../services/vendorService";
 import { createSimpleOrder } from "../services/ordersService";
+import { buildPaymentLink } from "../services/paymentsService";
+import { supabase } from "../lib/supabase";
 import colors from "../theme/colors";
 
 const PICKUP_TIMES = ["12:00", "12:30", "13:00", "13:30"];
+
+const PAYMENT_LOGOS = {
+  wave: require("../../assets/wave-logo.png"),
+  orange_money: require("../../assets/Orange-Money-logo.png"),
+};
 
 export default function ProductsScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const { user } = useAuth();
   const { addItem, cartCount } = useCart();
   const [products, setProducts] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [category, setCategory] = useState("tous");
+  const [selectedVendorId, setSelectedVendorId] = useState("tous");
   const [loading, setLoading] = useState(true);
   const [ordering, setOrdering] = useState(false);
   const [selectedTab, setSelectedTab] = useState("today");
   const [selectedTime, setSelectedTime] = useState("12:00");
   const [selectedPayment, setSelectedPayment] = useState("wave");
+  const [paymentPhone, setPaymentPhone] = useState("");
+  const [pendingProduct, setPendingProduct] = useState(null);
 
   const isSmall = width < 380;
 
   const loadProducts = async () => {
     try {
       setLoading(true);
+      const vendorList = await getVendors();
+      setVendors(vendorList);
       const data = await getProducts();
       setProducts(data);
     } catch (error) {
@@ -52,25 +69,84 @@ export default function ProductsScreen({ navigation }) {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("products-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => loadProducts(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const filtered = useMemo(
     () =>
-      products.filter((p) => category === "tous" || p.category === category),
-    [products, category],
+      products.filter(
+        (p) =>
+          (category === "tous" || p.category === category) &&
+          (selectedVendorId === "tous" || p.vendor_id === selectedVendorId),
+      ),
+    [products, category, selectedVendorId],
+  );
+
+  const vendorOptions = useMemo(
+    () => [
+      { id: "tous", nom_cantine: "Toutes cantines" },
+      ...vendors,
+    ],
+    [vendors],
   );
 
   const handleOrder = async (product) => {
+    if (!product?.id) {
+      Alert.alert("Commande", "Produit invalide.");
+      return;
+    }
     if (!user?.id) {
       Alert.alert("Commande", "Vous devez être connecté.");
+      return;
+    }
+    if (selectedPayment !== "cash" && !paymentPhone.trim()) {
+      Alert.alert("Paiement", "Veuillez saisir votre numéro de téléphone pour le paiement.");
       return;
     }
     if (ordering) return;
     try {
       setOrdering(true);
-      await createSimpleOrder({
+      const { id: orderId } = await createSimpleOrder({
         userId: user.id,
         product,
         modePaiement: selectedPayment,
       });
+      if (selectedPayment !== "cash") {
+        const paymentLink = buildPaymentLink(selectedPayment, {
+          amount: product?.prix,
+          phoneNumber: paymentPhone.trim(),
+          reference: orderId ?? null,
+        });
+
+        if (paymentLink) {
+          const supported = await Linking.canOpenURL(paymentLink);
+          if (supported) {
+            await Linking.openURL(paymentLink);
+          }
+        }
+
+        navigation.navigate("Paiement", {
+          orderIds: orderId ? [orderId] : [],
+          modePaiement: selectedPayment,
+          paymentLink,
+          phoneNumber: paymentPhone.trim(),
+          amount: product?.prix,
+        });
+        return;
+      }
+
       Alert.alert("Commande", "Commande passée avec succès.", [
         {
           text: "Voir mes commandes",
@@ -83,6 +159,15 @@ export default function ProductsScreen({ navigation }) {
     } finally {
       setOrdering(false);
     }
+  };
+
+  const handlePayNow = async () => {
+    if (!pendingProduct) {
+      Alert.alert("Paiement", "Choisissez d'abord un plat (bouton Commander).");
+      return;
+    }
+
+    await handleOrder(pendingProduct);
   };
 
   return (
@@ -185,6 +270,35 @@ export default function ProductsScreen({ navigation }) {
         {/* Categories */}
         <FlatList
           horizontal
+          data={vendorOptions}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          style={styles.vendorList}
+          contentContainerStyle={styles.catContent}
+          renderItem={({ item }) => (
+            <Pressable
+              style={[
+                styles.vendorChip,
+                selectedVendorId === item.id && styles.vendorChipActive,
+              ]}
+              onPress={() => setSelectedVendorId(item.id)}
+            >
+              <Text
+                style={[
+                  styles.vendorLabel,
+                  selectedVendorId === item.id && styles.vendorLabelActive,
+                ]}
+                numberOfLines={1}
+              >
+                {item.nom_cantine}
+              </Text>
+            </Pressable>
+          )}
+        />
+
+        {/* Categories */}
+        <FlatList
+          horizontal
           data={PRODUCT_CATEGORIES}
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
@@ -238,7 +352,13 @@ export default function ProductsScreen({ navigation }) {
           renderItem={({ item }) => (
             <ProductCard
               product={item}
-              onOrder={handleOrder}
+              onOrder={(p) => {
+                setPendingProduct(p);
+                Alert.alert(
+                  "Paiement",
+                  `Plat sélectionné : ${p?.nom ?? ""}\nChoisissez le paiement puis cliquez sur Payer.`,
+                );
+              }}
               onAddToCart={(product) => {
                 addItem(product, 1);
                 Alert.alert("Panier", `${product.nom} ajouté au panier.`);
@@ -304,6 +424,7 @@ export default function ProductsScreen({ navigation }) {
                   />
                 </View>
               ) : null}
+              <Image source={PAYMENT_LOGOS.wave} style={styles.paymentLogo} resizeMode="contain" />
               <Text style={styles.paymentLabel}>Wave</Text>
             </Pressable>
             <Pressable
@@ -322,6 +443,7 @@ export default function ProductsScreen({ navigation }) {
                   />
                 </View>
               ) : null}
+              <Image source={PAYMENT_LOGOS.orange_money} style={styles.paymentLogo} resizeMode="contain" />
               <Text style={styles.paymentLabel}>Orange Money</Text>
             </Pressable>
             <Pressable
@@ -341,6 +463,39 @@ export default function ProductsScreen({ navigation }) {
                 </View>
               ) : null}
               <Text style={styles.paymentLabel}>Espèces</Text>
+            </Pressable>
+          </View>
+
+          {selectedPayment !== "cash" ? (
+            <View style={styles.phoneWrap}>
+              <Text style={styles.phoneLabel}>Numéro de téléphone</Text>
+              <TextInput
+                value={paymentPhone}
+                onChangeText={setPaymentPhone}
+                placeholder="Ex: 77 000 00 00"
+                keyboardType="phone-pad"
+                style={styles.phoneInput}
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.payWrap}>
+            <Text style={styles.payHint} numberOfLines={2}>
+              {pendingProduct
+                ? `Plat: ${pendingProduct.nom} (${pendingProduct.prix})`
+                : "Sélectionnez un plat (bouton Commander) pour activer Payer"}
+            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.payBtn,
+                (!pendingProduct || ordering) && styles.payBtnDisabled,
+                pressed && pendingProduct && !ordering && { opacity: 0.9 },
+              ]}
+              disabled={!pendingProduct || ordering}
+              onPress={handlePayNow}
+            >
+              <MaterialCommunityIcons name="credit-card-outline" size={18} color="white" />
+              <Text style={styles.payBtnText}>{ordering ? "Paiement..." : "Payer"}</Text>
             </Pressable>
           </View>
         </View>
@@ -506,6 +661,7 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_700Bold",
     fontSize: 13,
   },
+  vendorList: { paddingHorizontal: 10, maxHeight: 42, marginBottom: 8 },
   catList: { paddingHorizontal: 10, maxHeight: 44, marginBottom: 10 },
   catContent: { paddingHorizontal: 4, gap: 8 },
   catChip: {
@@ -520,6 +676,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
+  vendorChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    maxWidth: 180,
+  },
+  vendorChipActive: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
+  },
+  vendorLabel: {
+    color: "#64748B",
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 12,
+  },
+  vendorLabelActive: { color: "white", fontFamily: "Manrope_700Bold" },
   catLabel: {
     color: "#64748B",
     fontFamily: "Manrope_600SemiBold",
@@ -629,6 +804,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  paymentLogo: { width: 64, height: 26 },
+  phoneWrap: { marginTop: 12, gap: 8 },
+  phoneLabel: { color: "#94A3B8", fontFamily: "Manrope_700Bold", fontSize: 12 },
+  phoneInput: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "white",
+    color: "#1e293b",
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 14,
+  },
+  payWrap: {
+    marginTop: 12,
+    gap: 10,
+  },
+  payHint: {
+    color: "#64748B",
+    fontFamily: "Manrope_500Medium",
+    fontSize: 12,
+  },
+  payBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+  },
+  payBtnDisabled: { opacity: 0.5 },
+  payBtnText: { color: "white", fontFamily: "Manrope_800ExtraBold", fontSize: 16 },
   orderBtn: {
     flexDirection: "row",
     alignItems: "center",
