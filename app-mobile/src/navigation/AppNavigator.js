@@ -2,7 +2,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { Image } from "react-native";
 import LoadingView from "../components/LoadingView";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
@@ -57,12 +56,10 @@ function AppTabs() {
         );
       case "Produits":
         return (
-          <Image
-            source={require("../../assets/logo.png")}
-            style={{ width: 20, height: 20, opacity: focused ? 1 : 0.6 }}
-            resizeMode="contain"
-            accessible
-            accessibilityLabel="Logo Cantine Connectee"
+          <MaterialCommunityIcons
+            name="silverware-fork-knife"
+            size={20}
+            color={color}
           />
         );
       case "Panier":
