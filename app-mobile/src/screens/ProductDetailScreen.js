@@ -48,7 +48,11 @@ export default function ProductDetailScreen({ navigation, route }) {
       {/* Header */}
       <View style={styles.floatingHeader}>
         <Pressable style={styles.headerBtn} onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="chevron-left" size={26} color="#334155" />
+          <MaterialCommunityIcons
+            name="chevron-left"
+            size={26}
+            color="#334155"
+          />
         </Pressable>
         <Pressable style={styles.headerBtn} onPress={() => setIsFav(!isFav)}>
           <MaterialCommunityIcons
@@ -85,7 +89,12 @@ export default function ProductDetailScreen({ navigation, route }) {
             <Text style={styles.name}>{product.nom}</Text>
             <View style={styles.ratingRow}>
               {[1, 2, 3, 4, 5].map((s) => (
-                <MaterialCommunityIcons key={s} name="star" size={14} color="#F59E0B" />
+                <MaterialCommunityIcons
+                  key={s}
+                  name="star"
+                  size={14}
+                  color="#F59E0B"
+                />
               ))}
               <Text style={styles.ratingText}>4.8 (120+ avis)</Text>
             </View>
@@ -97,7 +106,8 @@ export default function ProductDetailScreen({ navigation, route }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>
-            {product.description ?? "Un délicieux plat traditionnel, préparé avec des épices locales et des ingrédients frais. Servi chaud avec un goût authentique."}
+            {product.description ??
+              "Un délicieux plat traditionnel, préparé avec des épices locales et des ingrédients frais. Servi chaud avec un goût authentique."}
           </Text>
         </View>
 
@@ -130,13 +140,17 @@ export default function ProductDetailScreen({ navigation, route }) {
           <View style={[styles.optionRow, { borderBottomWidth: 0 }]}>
             <View>
               <Text style={styles.optionLabel}>Sauce Pimentée</Text>
-              <Text style={[styles.optionCaption, { color: "#10B981" }]}>Gratuit</Text>
+              <Text style={[styles.optionCaption, { color: "#10B981" }]}>
+                Gratuit
+              </Text>
             </View>
             <Pressable
               style={[styles.toggle, spicy && styles.toggleOn]}
               onPress={() => setSpicy(!spicy)}
             >
-              <View style={[styles.toggleThumb, spicy && styles.toggleThumbOn]} />
+              <View
+                style={[styles.toggleThumb, spicy && styles.toggleThumbOn]}
+              />
             </Pressable>
           </View>
         </View>
@@ -145,7 +159,10 @@ export default function ProductDetailScreen({ navigation, route }) {
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.qtyMain}>
-          <Pressable style={styles.qtyMainBtn} onPress={() => setQty(Math.max(1, qty - 1))}>
+          <Pressable
+            style={styles.qtyMainBtn}
+            onPress={() => setQty(Math.max(1, qty - 1))}
+          >
             <Text style={styles.qtyMainText}>−</Text>
           </Pressable>
           <Text style={styles.qtyMainVal}>{qty}</Text>
@@ -155,7 +172,9 @@ export default function ProductDetailScreen({ navigation, route }) {
         </View>
         <Pressable style={styles.addBtn} onPress={handleAddToCart}>
           <MaterialCommunityIcons name="cart-outline" size={20} color="white" />
-          <Text style={styles.addBtnText}>Ajouter — {formatFcfa(totalPrice)}</Text>
+          <Text style={styles.addBtnText}>
+            Ajouter — {formatFcfa(totalPrice)}
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -221,17 +240,43 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 16,
   },
-  name: { color: "#1e293b", fontFamily: "Manrope_800ExtraBold", fontSize: 24, lineHeight: 30, maxWidth: "70%" },
-  ratingRow: { flexDirection: "row", alignItems: "center", gap: 3, marginTop: 6 },
-  ratingText: { color: "#64748B", fontFamily: "Manrope_600SemiBold", fontSize: 12, marginLeft: 4 },
+  name: {
+    color: "#1e293b",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 24,
+    lineHeight: 30,
+    maxWidth: "70%",
+  },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginTop: 6,
+  },
+  ratingText: {
+    color: "#64748B",
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 12,
+    marginLeft: 4,
+  },
   price: { color: "#059669", fontFamily: "Manrope_800ExtraBold", fontSize: 22 },
   section: {
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
   },
-  sectionTitle: { color: "#1e293b", fontFamily: "Manrope_700Bold", fontSize: 16, marginBottom: 10 },
-  description: { color: "#64748B", fontFamily: "Manrope_500Medium", fontSize: 14, lineHeight: 22 },
+  sectionTitle: {
+    color: "#1e293b",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  description: {
+    color: "#64748B",
+    fontFamily: "Manrope_500Medium",
+    fontSize: 14,
+    lineHeight: 22,
+  },
   optionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -240,13 +285,47 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F8FAFC",
   },
-  optionLabel: { color: "#334155", fontFamily: "Manrope_600SemiBold", fontSize: 14 },
-  optionCaption: { color: "#94A3B8", fontFamily: "Manrope_500Medium", fontSize: 12, marginTop: 2 },
-  qtyGroup: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#F1F5F9", borderRadius: 99, paddingHorizontal: 6, paddingVertical: 4 },
-  qtyBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "white", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  optionLabel: {
+    color: "#334155",
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 14,
+  },
+  optionCaption: {
+    color: "#94A3B8",
+    fontFamily: "Manrope_500Medium",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  qtyGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 99,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+  qtyBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   qtyBtnAdd: { backgroundColor: "#10B981" },
   qtyBtnText: { color: "#334155", fontFamily: "Manrope_700Bold", fontSize: 18 },
-  qtyVal: { color: "#334155", fontFamily: "Manrope_700Bold", fontSize: 16, minWidth: 20, textAlign: "center" },
+  qtyVal: {
+    color: "#334155",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 16,
+    minWidth: 20,
+    textAlign: "center",
+  },
   toggle: {
     width: 48,
     height: 28,
@@ -287,8 +366,18 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   qtyMainBtn: { padding: 6 },
-  qtyMainText: { color: "#64748B", fontFamily: "Manrope_700Bold", fontSize: 20 },
-  qtyMainVal: { color: "#1e293b", fontFamily: "Manrope_800ExtraBold", fontSize: 18, minWidth: 24, textAlign: "center" },
+  qtyMainText: {
+    color: "#64748B",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 20,
+  },
+  qtyMainVal: {
+    color: "#1e293b",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 18,
+    minWidth: 24,
+    textAlign: "center",
+  },
   addBtn: {
     flex: 1,
     flexDirection: "row",
@@ -304,5 +393,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
-  addBtnText: { color: "white", fontFamily: "Manrope_800ExtraBold", fontSize: 16 },
+  addBtnText: {
+    color: "white",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 16,
+  },
 });

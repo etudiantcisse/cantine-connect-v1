@@ -95,10 +95,7 @@ export default function ProductsScreen({ navigation }) {
   );
 
   const vendorOptions = useMemo(
-    () => [
-      { id: "tous", nom_cantine: "Toutes cantines" },
-      ...vendors,
-    ],
+    () => [{ id: "tous", nom_cantine: "Toutes cantines" }, ...vendors],
     [vendors],
   );
 
@@ -112,7 +109,10 @@ export default function ProductsScreen({ navigation }) {
       return;
     }
     if (selectedPayment !== "cash" && !paymentPhone.trim()) {
-      Alert.alert("Paiement", "Veuillez saisir votre numéro de téléphone pour le paiement.");
+      Alert.alert(
+        "Paiement",
+        "Veuillez saisir votre numéro de téléphone pour le paiement.",
+      );
       return;
     }
     if (ordering) return;
@@ -428,7 +428,11 @@ export default function ProductsScreen({ navigation }) {
                   />
                 </View>
               ) : null}
-              <Image source={PAYMENT_LOGOS.wave} style={styles.paymentLogo} resizeMode="contain" />
+              <Image
+                source={PAYMENT_LOGOS.wave}
+                style={styles.paymentLogo}
+                resizeMode="contain"
+              />
               <Text style={styles.paymentLabel}>Wave</Text>
             </Pressable>
             <Pressable
@@ -447,7 +451,11 @@ export default function ProductsScreen({ navigation }) {
                   />
                 </View>
               ) : null}
-              <Image source={PAYMENT_LOGOS.orange_money} style={styles.paymentLogo} resizeMode="contain" />
+              <Image
+                source={PAYMENT_LOGOS.orange_money}
+                style={styles.paymentLogo}
+                resizeMode="contain"
+              />
               <Text style={styles.paymentLabel}>Orange Money</Text>
             </Pressable>
             <Pressable
@@ -498,8 +506,14 @@ export default function ProductsScreen({ navigation }) {
               disabled={!pendingProduct || ordering}
               onPress={handlePayNow}
             >
-              <MaterialCommunityIcons name="credit-card-outline" size={18} color="white" />
-              <Text style={styles.payBtnText}>{ordering ? "Paiement..." : "Payer"}</Text>
+              <MaterialCommunityIcons
+                name="credit-card-outline"
+                size={18}
+                color="white"
+              />
+              <Text style={styles.payBtnText}>
+                {ordering ? "Paiement..." : "Payer"}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -841,7 +855,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   payBtnDisabled: { opacity: 0.5 },
-  payBtnText: { color: "white", fontFamily: "Manrope_800ExtraBold", fontSize: 16 },
+  payBtnText: {
+    color: "white",
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 16,
+  },
   orderBtn: {
     flexDirection: "row",
     alignItems: "center",
