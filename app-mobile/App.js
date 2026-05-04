@@ -9,7 +9,7 @@ import {
 } from "@expo-google-fonts/manrope";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { Text, TextInput } from "react-native";
+import { ActivityIndicator, Image, Text, TextInput, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "./src/context/AuthContext";
 import { CartProvider } from "./src/context/CartContext";
@@ -57,7 +57,26 @@ export default function App() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#F3F4F6",
+          gap: 12,
+        }}
+      >
+        <Image
+          source={require("./assets/logo.png")}
+          style={{ width: 96, height: 96, resizeMode: "contain" }}
+        />
+        <ActivityIndicator size="large" color="#FF6B35" />
+        <Text style={{ color: "#6B7280", fontSize: 13 }}>
+          Chargement…
+        </Text>
+      </View>
+    );
   }
 
   return (
