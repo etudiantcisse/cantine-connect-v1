@@ -145,6 +145,14 @@ export default function CartScreen({ navigation }) {
     setLoading(true);
     try {
       const orderIds = await checkoutCart({ groupedByVendor, modePaiement });
+
+      // Diagnostic: Vérifier la session après checkout
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+      console.log("[CartScreen] User session after checkout:", currentUser?.id);
+      console.log("[CartScreen] Expected user:", user?.id);
+
       clearCart();
       if (modePaiement !== "cash") {
         const totalAmount = Number(subtotal) || 0;

@@ -454,6 +454,19 @@ begin
     raise exception 'Utilisateur non authentifie';
   end if;
 
+  -- Ensure the profile exists to satisfy FK orders.user_id -> profiles.id
+  insert into public.profiles (id, email, nom, prenom, telephone, role)
+  select
+    u.id,
+    coalesce(u.email, ''),
+    coalesce(u.raw_user_meta_data ->> 'nom', 'Utilisateur'),
+    coalesce(u.raw_user_meta_data ->> 'prenom', 'Nouveau'),
+    u.raw_user_meta_data ->> 'telephone',
+    coalesce(u.raw_user_meta_data ->> 'role', 'etudiant')
+  from auth.users u
+  where u.id = auth.uid()
+  on conflict (id) do nothing;
+
   if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
     raise exception 'Panier vide';
   end if;
