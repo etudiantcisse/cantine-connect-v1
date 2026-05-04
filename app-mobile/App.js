@@ -72,9 +72,7 @@ export default function App() {
           style={{ width: 96, height: 96, resizeMode: "contain" }}
         />
         <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={{ color: "#6B7280", fontSize: 13 }}>
-          Chargement…
-        </Text>
+        <Text style={{ color: "#6B7280", fontSize: 13 }}>Chargement…</Text>
       </View>
     );
   }
