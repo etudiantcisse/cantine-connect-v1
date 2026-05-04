@@ -69,7 +69,8 @@ export default function App() {
       >
         <Image
           source={require("./assets/logo.png")}
-          style={{ width: 96, height: 96, resizeMode: "contain" }}
+          resizeMode="contain"
+          style={{ width: 96, height: 96 }}
         />
         <ActivityIndicator size="large" color="#FF6B35" />
         <Text style={{ color: "#6B7280", fontSize: 13 }}>Chargement…</Text>

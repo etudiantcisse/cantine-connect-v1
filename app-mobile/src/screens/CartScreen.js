@@ -4,6 +4,7 @@ import {
   FlatList,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -619,11 +620,15 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 8,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px -4px 12px rgba(0,0,0,0.06)" }
+      : {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
+          elevation: 8,
+        }),
   },
   summaryRow: {
     flexDirection: "row",
@@ -660,13 +665,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#059669",
     borderRadius: 18,
     paddingVertical: 17,
-    shadowColor: "#059669",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px 6px 12px rgba(5,150,105,0.3)" }
+      : {
+          shadowColor: "#059669",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.3,
+          shadowRadius: 12,
+          elevation: 6,
+        }),
   },
-  confirmBtnDisabled: { opacity: 0.5, shadowOpacity: 0 },
+  confirmBtnDisabled: {
+    opacity: 0.5,
+    ...(Platform.OS === "web" ? { boxShadow: "none" } : { shadowOpacity: 0 }),
+  },
   confirmText: {
     color: "white",
     fontFamily: "Manrope_800ExtraBold",
