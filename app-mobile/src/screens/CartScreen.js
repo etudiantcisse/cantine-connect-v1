@@ -66,10 +66,12 @@ function CartItemRow({ item, onInc, onDec, onRemove }) {
           />
         ) : (
           <View style={styles.itemImgFallback}>
-            <MaterialCommunityIcons
-              name="silverware-fork-knife"
-              size={22}
-              color={colors.primary}
+            <Image
+              source={require("../../assets/logo.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+              accessible
+              accessibilityLabel="Logo Cantine Connectee"
             />
           </View>
         )}

@@ -65,7 +65,13 @@ export default function ProductDetailScreen({ navigation, route }) {
           <Image source={{ uri: product.image_url }} style={styles.image} />
         ) : (
           <View style={styles.imageFallback}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={64} color={colors.primary} />
+            <Image
+              source={require("../../assets/logo.png")}
+              style={{ width: 72, height: 72 }}
+              resizeMode="contain"
+              accessible
+              accessibilityLabel="Logo Cantine Connectee"
+            />
           </View>
         )}
         <View style={styles.imageGradient} />

@@ -1,137 +1,117 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#F4440A" />
-    <meta name="description" content="Cantine Connectée - Plateforme de restauration intelligente" />
-    <meta property="og:title" content="Cantine Connectée" />
-    <meta property="og:description" content="Plateforme de restauration intelligente et connectée" />
-    <meta property="og:image" content="./logo.png" />
-    <meta property="og:type" content="website" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="./logo.ico" />
-    <link rel="apple-touch-icon" href="./logo.png" />
-    <link rel="manifest" href="./manifest.json" />
-    
-    <title>Cantine Connectée</title>
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!-- 
+      This viewport works for phones with notches.
+      It's optimized for gestures by disabling global zoom.
+     -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
+    />
+    <title>Cantine Connecte</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html, body {
-        width: 100%;
-        height: 100%;
-        background-color: #f8f7f5;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      }
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
+      /**
+       * Extend the react-native-web reset:
+       * https://github.com/necolas/react-native-web/blob/master/packages/react-native-web/src/exports/StyleSheet/initialRules.js
+       */
+      html,
+      body,
       #root {
         width: 100%;
-        height: 100%;
+        /* To smooth any scrolling behavior */
+        -webkit-overflow-scrolling: touch;
+        margin: 0px;
+        padding: 0px;
+        /* Allows content to fill the viewport and go beyond the bottom */
+        min-height: 100%;
       }
-      
-      /* Splash Screen / Loading */
-      .loading-container {
-        width: 100%;
-        height: 100%;
+      #root {
+        flex-shrink: 0;
+        flex-basis: auto;
+        flex-grow: 1;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, #FFF8F2 0%, #f8f7f5 100%);
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 9999;
+        flex: 1;
       }
-      
-      .logo-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 40px;
-        animation: fadeIn 0.8s ease-in-out;
-      }
-      
-      .logo-wrapper img {
-        width: 120px;
-        height: 120px;
-        object-fit: contain;
-        animation: scaleIn 0.6s ease-out;
-      }
-      
-      .brand-name {
-        font-size: 28px;
-        font-weight: 800;
-        color: #1e293b;
-        margin-bottom: 8px;
-        text-align: center;
-        animation: fadeIn 1s ease-in-out 0.2s backwards;
-        letter-spacing: 0.5px;
-      }
-      
-      .brand-tagline {
-        font-size: 14px;
-        color: #94A3B8;
-        font-weight: 500;
-        text-align: center;
-        animation: fadeIn 1s ease-in-out 0.4s backwards;
-      }
-      
-      .spinner {
-        margin-top: 40px;
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(244, 140, 37, 0.1);
-        border-top-color: #F4440A;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      
-      @keyframes scaleIn {
-        from { 
-          opacity: 0; 
-          transform: scale(0.8);
-        }
-        to { 
-          opacity: 1; 
-          transform: scale(1);
-        }
-      }
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      /* Hide loading screen once React is mounted */
-      #root:not(:empty) ~ .loading-container {
-        display: none;
-      }
-    </style>
-  <link rel="shortcut icon" href="/favicon.ico" /></head>
-  <body>
-    <div id="root"></div>
-    
-    <div class="loading-container">
-      <div class="logo-wrapper">
-        <img src="./logo.png" alt="Cantine Connectée" />
-      </div>
-      <div class="brand-name">Cantine Connectée</div>
-      <div class="brand-tagline">Plateforme de restauration intelligente</div>
-      <div class="spinner"></div>
-    </div>
-  <script src="/bundles/web-210568ce69caa0f7435e53df15fe04a9.js" defer></script></body>
-</html>
 
+      html {
+        scroll-behavior: smooth;
+        /* Prevent text size change on orientation change https://gist.github.com/tfausak/2222823#file-ios-8-web-app-html-L138 */
+        -webkit-text-size-adjust: 100%;
+        height: calc(100% + env(safe-area-inset-top));
+      }
+
+      body {
+        display: flex;
+        /* Allows you to scroll below the viewport; default value is visible */
+        overflow-y: auto;
+        overscroll-behavior-y: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -ms-overflow-style: scrollbar;
+      }
+      /* Enable for apps that support dark-theme */
+      /*@media (prefers-color-scheme: dark) {
+        body {
+          background-color: black;
+        }
+      }*/
+    </style>
+  </head>
+
+  <body>
+    <!-- 
+      A generic no script element with a reload button and a message.
+      Feel free to customize this however you'd like.
+    -->
+    <noscript>
+      <form
+        action=""
+        style="
+          background-color: #fff;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 9999;
+        "
+      >
+        <div
+          style="
+            font-size: 18px;
+            font-family: Helvetica, sans-serif;
+            line-height: 24px;
+            margin: 10%;
+            width: 80%;
+          "
+        >
+          <p>Oh no! It looks like JavaScript is not enabled in your browser.</p>
+          <p style="margin: 20px 0;">
+            <button
+              type="submit"
+              style="
+                background-color: #4630eb;
+                border-radius: 100px;
+                border: none;
+                box-shadow: none;
+                color: #fff;
+                cursor: pointer;
+                font-weight: bold;
+                line-height: 20px;
+                padding: 6px 16px;
+              "
+            >
+              Reload
+            </button>
+          </p>
+        </div>
+      </form>
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  <script src="/bundles/web-58d896f0f2a9b6500f158b09762e6ea1.js" defer></script></body>
+</html>

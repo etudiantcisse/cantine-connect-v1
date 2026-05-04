@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Image,
   ScrollView,
   ActivityIndicator,
   Dimensions,
@@ -12,7 +13,6 @@ import {
   Platform,
 } from "react-native";
 import {
-  Utensils,
   Eye,
   EyeOff,
   CheckCircle,
@@ -76,7 +76,13 @@ const LoginScreen = ({ navigation }) => {
             <View
               style={[styles.logoBg, { width: logoSize, height: logoSize }]}
             >
-              <Utensils color={colors.surface} size={48} />
+              <Image
+                source={require("../../assets/logo.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+                accessible
+                accessibilityLabel="Logo Cantine Connectee"
+              />
             </View>
             <Text style={styles.brandName}>Cantine Connectée</Text>
             <Text style={styles.brandTagline}>
@@ -250,16 +256,20 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoBg: {
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
     borderRadius: 80,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowColor: "transparent",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  logoImage: {
+    width: "70%",
+    height: "70%",
   },
   logoIcon: {
     fontSize: 48,

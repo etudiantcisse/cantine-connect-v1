@@ -177,10 +177,12 @@ export default function ProductsScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.brandBox}>
-          <MaterialCommunityIcons
-            name="silverware-fork-knife"
-            size={20}
-            color={colors.primary}
+          <Image
+            source={require("../../assets/logo.png")}
+            style={{ width: 20, height: 20 }}
+            resizeMode="contain"
+            accessible
+            accessibilityLabel="Logo Cantine Connectee"
           />
         </View>
         <View style={{ flex: 1 }}>
