@@ -112,3 +112,4 @@ supabase/
 3. Ajouter tests E2E (Detox) et tests unitaires.
    Msyk_0406
 # cantineconnect-
+# cantine-connect-v1
