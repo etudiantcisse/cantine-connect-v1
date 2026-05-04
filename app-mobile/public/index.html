@@ -132,6 +132,24 @@
       <div class="brand-tagline">Plateforme de restauration intelligente</div>
       <div class="spinner"></div>
     </div>
+    <script>
+      (function () {
+        var attempts = 0;
+        var maxAttempts = 40;
+        function hideLoader() {
+          var root = document.getElementById("root");
+          var loader = document.querySelector(".loading-container");
+          if (!loader) return;
+          if ((root && root.childNodes && root.childNodes.length > 0) || attempts >= maxAttempts) {
+            loader.style.display = "none";
+            return;
+          }
+          attempts += 1;
+          setTimeout(hideLoader, 100);
+        }
+        hideLoader();
+      })();
+    </script>
   </body>
 </html>
 
