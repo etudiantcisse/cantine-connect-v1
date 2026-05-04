@@ -18,6 +18,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { checkoutCart } from "../services/ordersService";
 import { buildPaymentLink } from "../services/paymentsService";
+import { supabase } from "../lib/supabase";
 import colors from "../theme/colors";
 import { formatFcfa } from "../utils/currency";
 
