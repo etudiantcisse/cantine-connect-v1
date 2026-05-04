@@ -10,9 +10,9 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import {
-  UserPlus,
   Eye,
   EyeOff,
   GraduationCap,
@@ -143,7 +143,14 @@ const SignupScreen = ({ navigation }) => {
             <View
               style={[styles.logoBg, { width: logoSize, height: logoSize }]}
             >
-              <UserPlus color={colors.surface} size={40} />
+              <Image
+                source={require("../../assets/logo.png")}
+                style={{
+                  width: logoSize * 0.8,
+                  height: logoSize * 0.8,
+                  resizeMode: "contain",
+                }}
+              />
             </View>
             <Text style={styles.brandName}>Créer un compte</Text>
             <Text style={styles.brandTagline}>Rejoignez Cantine Connectée</Text>
