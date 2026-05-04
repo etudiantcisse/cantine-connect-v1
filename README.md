@@ -111,3 +111,4 @@ supabase/
 2. Ajouter une vraie gestion du panier multi-produits.
 3. Ajouter tests E2E (Detox) et tests unitaires.
    Msyk_0406
+# cantineconnect-
