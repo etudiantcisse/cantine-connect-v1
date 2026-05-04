@@ -131,9 +131,11 @@ export default function ProductsScreen({ navigation }) {
         });
 
         if (paymentLink) {
-          const supported = await Linking.canOpenURL(paymentLink);
-          if (supported) {
+          try {
             await Linking.openURL(paymentLink);
+          } catch (error) {
+            // On web, the browser may block popups if opened after async work.
+            // The Payment screen still provides a manual "open" button.
           }
         }
 

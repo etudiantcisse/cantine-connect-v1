@@ -103,7 +103,7 @@ export async function checkoutCart({ groupedByVendor, modePaiement = "cash" }) {
   console.log("[OrderService] Réponse RPC:", data);
 
   const rows = Array.isArray(data) ? data : [];
-  return rows.map((row) => row?.id).filter(Boolean);
+  return rows.map((row) => row?.order_id ?? row?.id).filter(Boolean);
 }
 
 export async function cancelOrder(orderId) {

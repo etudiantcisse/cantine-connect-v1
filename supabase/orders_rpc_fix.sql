@@ -1,13 +1,11 @@
 -- Fix RPC return shape for PostgREST /rest/v1/rpc/create_orders_from_cart
 -- Run this in Supabase SQL Editor (as admin).
 
-create extension if not exists pgcrypto;
-
 create or replace function public.create_orders_from_cart(
   p_items jsonb,
   p_mode_paiement text default 'cash'
 )
-returns table (id uuid)
+returns table (order_id uuid)
 language plpgsql
 security definer
 set search_path = public
@@ -75,7 +73,7 @@ begin
         || '-'
         || to_char(now(), 'YYYYMMDDHH24MISS')
         || '-'
-        || encode(gen_random_bytes(3), 'hex');
+        || substr(md5(random()::text || clock_timestamp()::text), 1, 6);
     end if;
 
     insert into public.orders (
@@ -100,7 +98,7 @@ begin
       v_platform_fee,
       v_vendor_amount
     )
-    returning orders.id into v_order_id;
+    returning id into v_order_id;
 
     for v_item in select * from jsonb_array_elements(v_group -> 'items')
     loop
@@ -112,7 +110,7 @@ begin
       );
     end loop;
 
-    id := v_order_id;
+    order_id := v_order_id;
     return next;
   end loop;
 
@@ -122,4 +120,3 @@ $$;
 
 revoke all on function public.create_orders_from_cart(jsonb, text) from public;
 grant execute on function public.create_orders_from_cart(jsonb, text) to anon, authenticated;
-

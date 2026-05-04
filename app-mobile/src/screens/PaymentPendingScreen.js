@@ -3,6 +3,7 @@ import {
   Alert,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,6 +42,21 @@ export default function PaymentPendingScreen({ navigation, route }) {
         "Paiement",
         error?.message ?? "Impossible d'ouvrir le lien de paiement.",
       );
+    }
+  };
+
+  const copyLink = async () => {
+    if (!paymentLink) return;
+    if (Platform.OS !== "web") {
+      Alert.alert("Paiement", "Copie disponible sur web uniquement pour le moment.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(paymentLink);
+      Alert.alert("Paiement", "Lien copié.");
+    } catch (error) {
+      Alert.alert("Paiement", "Impossible de copier le lien.");
     }
   };
 
@@ -98,6 +114,18 @@ export default function PaymentPendingScreen({ navigation, route }) {
               </View>
             ) : null}
           </View>
+
+          {paymentLink ? (
+            <View style={styles.linkBox}>
+              <Text style={styles.linkLabel}>Lien de paiement</Text>
+              <Text style={styles.linkValue} selectable>{paymentLink}</Text>
+              {Platform.OS === "web" ? (
+                <Pressable style={styles.copyBtn} onPress={copyLink}>
+                  <Text style={styles.copyBtnText}>Copier le lien</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
 
           {paymentLogos[modePaiement] ? (
             <View style={styles.logoRow}>
@@ -226,6 +254,29 @@ const styles = StyleSheet.create({
   badgeTextAccent: {
     color: "#059669",
   },
+  linkBox: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    padding: 12,
+    gap: 8,
+  },
+  linkLabel: {
+    color: "#94A3B8",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+    letterSpacing: 1.2,
+  },
+  linkValue: { color: "#0F172A", fontFamily: "Manrope_600SemiBold", fontSize: 12 },
+  copyBtn: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: "rgba(244,140,37,0.12)",
+  },
+  copyBtnText: { color: "#334155", fontFamily: "Manrope_700Bold", fontSize: 12 },
   logoRow: { alignItems: "center", paddingVertical: 6 },
   logo: { width: 140, height: 44 },
   phoneRow: {
