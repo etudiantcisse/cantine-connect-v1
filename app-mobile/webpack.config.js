@@ -20,7 +20,7 @@ module.exports = async function (env, argv) {
   if (!config.plugins) {
     config.plugins = [];
   }
-  
+
   config.plugins.push(
     new CopyWebpackPlugin({
       patterns: [
@@ -32,9 +32,8 @@ module.exports = async function (env, argv) {
           },
         },
       ],
-    })
+    }),
   );
 
   return config;
 };
-

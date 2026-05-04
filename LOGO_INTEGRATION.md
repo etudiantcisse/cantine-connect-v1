@@ -7,6 +7,7 @@ Le logo **Cantine Connectée** et le favicon sont maintenant intégrés partout 
 ## 🎨 Assets Disponibles
 
 ### Dans `app-mobile/assets/`:
+
 - **logo.png** - Logo principal (CC avec WiFi/fourchettes) - PNG transparent
 - **logo.ico** - Favicon pour le web
 - **wave-logo.png** - Logo Wave pour les paiements mobiles
@@ -14,7 +15,9 @@ Le logo **Cantine Connectée** et le favicon sont maintenant intégrés partout 
 - **free-money-logo.png** - Logo FREE Money (optionnel)
 
 ### Dans `app-mobile/public/`:
+
 Copies des assets pour le déploiement web Netlify:
+
 - `logo.png`, `logo.ico`, `wave-logo.png`, `Orange-Money-logo.png`
 - `index.html` - Page HTML avec splash screen du logo
 - `manifest.json` - Configuration PWA avec icônes
@@ -22,6 +25,7 @@ Copies des assets pour le déploiement web Netlify:
 ## ✅ Intégrations Effectuées
 
 ### 1. **Configuration Expo (app.json)**
+
 - ✅ `icon` - Logo pour app store (iOS/Android/Web)
 - ✅ `favicon` - Favicon web
 - ✅ `splash.image` - Image de démarrage
@@ -30,25 +34,27 @@ Copies des assets pour le déploiement web Netlify:
 - ✅ `web.favicon` & `web.manifest` - Configuration web
 
 ### 2. **Écrans (React Native)**
+
 - ✅ **HomeScreen** - Logo animé au centre (remplace l'icône fourchette)
 - ✅ **LoginScreen** - Logo dans la section authentification
 - ✅ **SignupScreen** - Logo dans la section création de compte
 
 ### 3. **Configuration Web**
-- ✅ **public/index.html** - 
-  - Favicon `<link rel="icon">` 
+
+- ✅ **public/index.html** -
+  - Favicon `<link rel="icon">`
   - Apple touch icon pour iOS
   - Splash screen avec logo et animation
   - Meta tags OG pour partage social
-  
-- ✅ **public/manifest.json** - 
+- ✅ **public/manifest.json** -
   - Configuration PWA avec icônes multiples
   - Favicon standalone pour installation en tant qu'app
 
 ### 4. **Build & Déploiement**
+
 - ✅ **webpack.config.js** - Plugin CopyWebpackPlugin pour copier `public/` vers `dist/`
 - ✅ **package.json** - Script `copy:assets` (Node.js) pour copier assets avant build
-- ✅ **netlify.toml** - 
+- ✅ **netlify.toml** -
   - `copy:assets` dans la commande de build
   - Cache headers pour les assets (1 an pour fichiers versionnés)
   - Redirects pour SPA
@@ -76,18 +82,21 @@ npm run ios
 ## 📱 Plateforme et Affichage du Logo
 
 ### Mobile (iOS/Android)
+
 - **App Icon** - Logo.png affiché sur home screen, app store, app switcher
 - **Splash Screen** - Logo affiché au démarrage de l'app
 - **HomeScreen** - Logo animé au centre avec rotation
 - **Auth Screens** - Logo dans cercle de couleur
 
 ### Web (Netlify/Desktop)
+
 - **Favicon** - Logo.ico dans onglet navigateur
 - **Loading Screen** - Logo avec animation avant chargement React
 - **OG Tags** - Logo pour partage social (Facebook, LinkedIn, etc.)
 - **Manifest** - Icônes pour "Ajouter à l'écran d'accueil" (PWA)
 
 ### PWA (Progressive Web App)
+
 - **Installation** - Icône logo.png sur l'écran d'accueil
 - **Standalone** - Logo utilisé pour barres de titre et tiles
 - **Manifest** - Configurations pour installation sans navigateur
@@ -95,7 +104,7 @@ npm run ios
 ## 🔄 Flux de Déploiement
 
 ```
-assets/logo.* 
+assets/logo.*
     ↓
 public/ (copié via npm run copy:assets)
     ↓
