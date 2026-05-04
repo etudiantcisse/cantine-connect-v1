@@ -1,6 +1,6 @@
 [build]
   base = "app-mobile"
-  command = "npm run copy:assets && npm run build:web"
+  command = "npm run build:web"
   publish = "dist"
 
 [build.environment]
@@ -10,22 +10,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-[[headers]]
-  for = "/*.{js,css,png,ico,jpg,jpeg,svg,webp}"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/index.html"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-

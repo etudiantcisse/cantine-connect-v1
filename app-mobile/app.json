@@ -1,35 +1,18 @@
 {
   "expo": {
-    "name": "Cantine Connecté",
+    "name": "Cantine Connecte",
     "slug": "cantine-connecte",
     "version": "1.0.0",
     "orientation": "portrait",
     "platforms": ["android", "ios", "web"],
     "userInterfaceStyle": "light",
-    "icon": "./assets/logo.png",
     "splash": {
-      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFF8F2"
     },
     "assetBundlePatterns": ["**/*"],
     "web": {
-      "bundler": "metro",
-      "favicon": "./assets/logo.png",
-      "manifest": "./public/manifest.json"
-    },
-    "android": {
-      "icon": "./assets/logo.png",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#FFF8F2"
-      },
-      "package": "com.cantineconnectee.app"
-    },
-    "ios": {
-      "icon": "./assets/logo.png",
-      "supportsTabletMode": true,
-      "bundleIdentifier": "com.cantineconnectee.app"
+      "bundler": "metro"
     }
   }
 }

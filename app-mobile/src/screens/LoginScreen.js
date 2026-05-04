@@ -10,9 +10,9 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from "react-native";
 import {
+  Utensils,
   Eye,
   EyeOff,
   CheckCircle,
@@ -76,14 +76,7 @@ const LoginScreen = ({ navigation }) => {
             <View
               style={[styles.logoBg, { width: logoSize, height: logoSize }]}
             >
-              <Image
-                source={require("../../assets/logo.png")}
-                resizeMode="contain"
-                style={{
-                  width: logoSize * 0.8,
-                  height: logoSize * 0.8,
-                }}
-              />
+              <Utensils color={colors.surface} size={48} />
             </View>
             <Text style={styles.brandName}>Cantine Connectée</Text>
             <Text style={styles.brandTagline}>
